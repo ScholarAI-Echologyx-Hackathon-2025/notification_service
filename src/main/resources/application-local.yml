@@ -1,0 +1,171 @@
+spring:
+  application:
+    name: notification-service
+  cloud:
+    discovery:
+      enabled: true
+
+  datasource:
+    url: jdbc:postgresql://localhost:${NOTIFICATION_DB_PORT:5434}/notificationDB
+    username: ${NOTIFICATION_DB_USER}
+    password: ${NOTIFICATION_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      minimum-idle: 3
+      maximum-pool-size: 5
+  
+  # Flyway configuration - Disabled for development efficiency
+  flyway:
+    enabled: false
+    # locations: classpath:db/migration
+    # baseline-on-migrate: true
+    # validate-on-migrate: true
+    # clean-disabled: false
+    # out-of-order: false
+    # table: flyway_schema_history
+    # baseline-version: 0
+    # baseline-description: "Initial baseline"
+    # placeholders:
+    #   uuid_type: UUID
+    #   uuid_default: DEFAULT gen_random_uuid()
+  
+  # JPA configuration
+  jpa:
+    hibernate:
+      ddl-auto: update  # Changed from validate to update for development
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        use_sql_comments: true
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER}
+    password: ${RABBITMQ_PASSWORD}
+
+  # Email Configuration (Gmail SMTP)
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${GMAIL_ADDRESS}
+    password: ${GMAIL_APP_PASSWORD}
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+          ssl:
+            trust: smtp.gmail.com
+
+  # Thymeleaf Configuration
+  thymeleaf:
+    cache: false
+    mode: HTML
+    encoding: UTF-8
+    servlet:
+      content-type: text/html
+
+# RabbitMQ Custom Configuration
+rabbitmq:
+  notification:
+    queue:
+      name: notification-queue
+    exchange:
+      name: notification-exchange
+    routing:
+      key: notification.#
+
+# Application Configuration
+app:
+  name: ScholarAI Notification Service
+  version: 1.0.0
+
+server:
+  port: 8082
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: never
+    include-exception: false
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: localhost
+
+
+management:
+  info:
+    git:
+      mode: full
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: "${spring.application.name}"
+  tracing:
+    enabled: false
+    sampling:
+      probability: 1
+
+springdoc:
+  api-docs:
+    enabled: true
+  show-actuator: true
+  use-management-port: false
+  swagger-ui:
+    path: /docs
+    # Enable authorization persistence in browser
+    persistAuthorization: true
+    # Enable deep linking for swagger operations
+    deepLinking: true
+    # Display request duration in swagger UI
+    displayRequestDuration: true
+    # Enable filtering of operations
+    filter: true
+    # Show common extensions
+    showExtensions: true
+    # Sort operations alphabetically
+    operationsSorter: alpha
+    # Sort tags alphabetically
+    tagsSorter: alpha
+    # Enable try it out by default
+    tryItOutEnabled: true
+
+
+cors:
+  allowed-origins: "https://localhost:3000,https://example.com"
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.security: DEBUG
+
+    # quiet only Eureka-related logs
+    com.netflix.discovery: WARN
+    com.netflix.eureka: WARN
+    org.springframework.cloud.netflix.eureka: WARN
+    org.springframework.cloud.client.discovery: INFO
