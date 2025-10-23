@@ -1,0 +1,68 @@
+services:
+  notification-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: scholar-notification-service
+
+    # 🏷️ Add metadata labels for cleanup & observability
+    labels:
+      service: "notification-service"
+      maintainer: "ScholarAI <dev@scholarai.local>"
+      version: "0.0.1-SNAPSHOT"
+      description: "Notification Service for ScholarAI"
+    env_file:
+      - /opt/scholarai/envs/notification-service.env
+    ports:
+      - "8082:8082"
+
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILE:-prod}
+      - SERVER_PORT=8082
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://service-registry:8761/eureka/
+      # Database connection (will use notification-db)
+      - NOTIFICATION_DB_HOST=notification-db
+      # RabbitMQ
+      - RABBITMQ_HOST=user-rabbitmq
+
+      # JVM: small heap, exit on OOM
+      - JAVA_TOOL_OPTIONS=-XX:InitialRAMPercentage=20 -XX:MaxRAMPercentage=60 -XX:+UseStringDeduplication -XX:+ExitOnOutOfMemoryError
+
+      # Spring Boot tuning: lightweight pools
+      - SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE=5
+      - SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE=1
+      - SERVER_TOMCAT_MAX_THREADS=20
+      - SERVER_TOMCAT_MAX_CONNECTIONS=50
+      - SERVER_TOMCAT_ACCEPT_COUNT=20
+      - SPRING_THREADS_VIRTUAL_ENABLED=true
+
+      # RabbitMQ listener: low concurrency
+      - SPRING_RABBITMQ_LISTENER_SIMPLE_CONCURRENCY=1
+      - SPRING_RABBITMQ_LISTENER_SIMPLE_MAX_CONCURRENCY=2
+      - SPRING_RABBITMQ_LISTENER_SIMPLE_PREFETCH=20
+
+    networks:
+      - scholarai-network
+    restart: unless-stopped
+
+    # Resource caps: small footprint
+    cpus: 0.5
+    mem_limit: 512m
+    mem_reservation: 256m
+    pids_limit: 256
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+networks:
+  scholarai-network:
+    external: true
+    name: docker_scholarai-network
