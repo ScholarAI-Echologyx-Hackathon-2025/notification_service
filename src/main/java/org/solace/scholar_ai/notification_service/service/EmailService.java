@@ -61,165 +61,58 @@ public class EmailService {
 		}
 	}
 
-    public void sendPasswordResetEmail(String toEmail, String toName, Map<String, Object> templateData) {
-        if (fromEmail == null || fromEmail.isEmpty()) {
-            log.error("Mail credentials not configured. Cannot send password reset email to: {}", toEmail);
-            throw new RuntimeException("Mail credentials not configured");
-        }
+	public void sendPasswordResetEmail(String toEmail, String toName, Map<String, Object> templateData) {
+		sendTemplatedEmail(toEmail, "Password Reset - " + appName, "password-reset-email", templateData);
+	}
 
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+	public void sendEmailVerificationEmail(String toEmail, String toName, Map<String, Object> templateData) {
+		sendTemplatedEmail(toEmail, "Verify Your Email - " + appName, "email-verification", templateData);
+	}
 
-            helper.setFrom(fromEmail);
-            helper.setTo(toEmail);
-            helper.setSubject("Password Reset - " + appName);
+	public void sendWebSearchCompletedEmail(String toEmail, String toName, Map<String, Object> templateData) {
+		sendTemplatedEmail(toEmail, "Your Search Results Are Ready", "web-search-completed-email", templateData);
+	}
 
-            Context context = new Context();
-            context.setVariables(templateData);
-            String htmlContent = templateEngine.process("password-reset-email", context);
-            helper.setText(htmlContent, true);
+	public void sendSummarizationCompletedEmail(String toEmail, String toName, Map<String, Object> templateData) {
+		sendTemplatedEmail(toEmail, "Your Summary Is Ready", "summarization-completed-email", templateData);
+	}
 
-            mailSender.send(message);
-            log.info("Password reset email sent successfully to: {}", toEmail);
-        } catch (MessagingException e) {
-            log.error("Failed to send password reset email to: {}", toEmail, e);
-            throw new RuntimeException("Failed to send password reset email", e);
-        }
-    }
+	public void sendGapAnalysisCompletedEmail(String toEmail, String toName, Map<String, Object> templateData) {
+		sendTemplatedEmail(toEmail, "Gap Analysis Complete", "gap-analysis-completed-email", templateData);
+	}
 
-    public void sendEmailVerificationEmail(String toEmail, String toName, Map<String, Object> templateData) {
-        if (fromEmail == null || fromEmail.isEmpty()) {
-            log.error("Mail credentials not configured. Cannot send email verification to: {}", toEmail);
-            throw new RuntimeException("Mail credentials not configured");
-        }
+	public void sendProjectDeletedEmail(String toEmail, String toName, Map<String, Object> templateData) {
+		sendTemplatedEmail(toEmail, "Project Deleted - " + appName, "project-deleted-email", templateData);
+	}
 
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+	/**
+	 * Generic helper to send any templated email.
+	 * Reduces code duplication across all email methods.
+	 */
+	private void sendTemplatedEmail(String toEmail, String subject, String templateName, Map<String, Object> templateData) {
+		if (fromEmail == null || fromEmail.isEmpty()) {
+			log.error("Mail not configured, can't send to: {}", toEmail);
+			throw new RuntimeException("Mail credentials not configured");
+		}
 
-            helper.setFrom(fromEmail);
-            helper.setTo(toEmail);
-            helper.setSubject("Verify Your Email - " + appName);
+		try {
+			MimeMessage message = mailSender.createMimeMessage();
+			MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            Context context = new Context();
-            context.setVariables(templateData);
-            String htmlContent = templateEngine.process("email-verification", context);
-            helper.setText(htmlContent, true);
+			helper.setFrom(fromEmail);
+			helper.setTo(toEmail);
+			helper.setSubject(subject);
 
-            mailSender.send(message);
-            log.info("Email verification sent successfully to: {}", toEmail);
-        } catch (MessagingException e) {
-            log.error("Failed to send email verification to: {}", toEmail, e);
-            throw new RuntimeException("Failed to send email verification", e);
-        }
-    }
+			Context context = new Context();
+			context.setVariables(templateData);
+			String htmlContent = templateEngine.process(templateName, context);
+			helper.setText(htmlContent, true);
 
-    public void sendWebSearchCompletedEmail(String toEmail, String toName, Map<String, Object> templateData) {
-        if (fromEmail == null || fromEmail.isEmpty()) {
-            log.error("Mail credentials not configured. Cannot send web search completed email to: {}", toEmail);
-            throw new RuntimeException("Mail credentials not configured");
-        }
-
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setFrom(fromEmail);
-            helper.setTo(toEmail);
-            helper.setSubject("Your web search results are ready - " + appName);
-
-            Context context = new Context();
-            context.setVariables(templateData);
-            String htmlContent = templateEngine.process("web-search-completed", context);
-            helper.setText(htmlContent, true);
-
-            mailSender.send(message);
-            log.info("Web search completed email sent successfully to: {}", toEmail);
-        } catch (MessagingException e) {
-            log.error("Failed to send web search completed email to: {}", toEmail, e);
-            throw new RuntimeException("Failed to send web search completed email", e);
-        }
-    }
-
-    public void sendSummarizationCompletedEmail(String toEmail, String toName, Map<String, Object> templateData) {
-        if (fromEmail == null || fromEmail.isEmpty()) {
-            log.error("Mail credentials not configured. Cannot send summarization completed email to: {}", toEmail);
-            throw new RuntimeException("Mail credentials not configured");
-        }
-
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setFrom(fromEmail);
-            helper.setTo(toEmail);
-            helper.setSubject("Your paper summary is ready - " + appName);
-
-            Context context = new Context();
-            context.setVariables(templateData);
-            String htmlContent = templateEngine.process("summarization-completed", context);
-            helper.setText(htmlContent, true);
-
-            mailSender.send(message);
-            log.info("Summarization completed email sent successfully to: {}", toEmail);
-        } catch (MessagingException e) {
-            log.error("Failed to send summarization completed email to: {}", toEmail, e);
-            throw new RuntimeException("Failed to send summarization completed email", e);
-        }
-    }
-
-    public void sendProjectDeletedEmail(String toEmail, String toName, Map<String, Object> templateData) {
-        if (fromEmail == null || fromEmail.isEmpty()) {
-            log.error("Mail credentials not configured. Cannot send project deleted email to: {}", toEmail);
-            throw new RuntimeException("Mail credentials not configured");
-        }
-
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setFrom(fromEmail);
-            helper.setTo(toEmail);
-            helper.setSubject("Project deleted - " + appName);
-
-            Context context = new Context();
-            context.setVariables(templateData);
-            String htmlContent = templateEngine.process("project-deleted", context);
-            helper.setText(htmlContent, true);
-
-            mailSender.send(message);
-            log.info("Project deleted email sent successfully to: {}", toEmail);
-        } catch (MessagingException e) {
-            log.error("Failed to send project deleted email to: {}", toEmail, e);
-            throw new RuntimeException("Failed to send project deleted email", e);
-        }
-    }
-
-    public void sendGapAnalysisCompletedEmail(String toEmail, String toName, Map<String, Object> templateData) {
-        if (fromEmail == null || fromEmail.isEmpty()) {
-            log.error("Mail credentials not configured. Cannot send gap analysis completed email to: {}", toEmail);
-            throw new RuntimeException("Mail credentials not configured");
-        }
-
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setFrom(fromEmail);
-            helper.setTo(toEmail);
-            helper.setSubject("Gap analysis is ready - " + appName);
-
-            Context context = new Context();
-            context.setVariables(templateData);
-            String htmlContent = templateEngine.process("gap-analysis-completed", context);
-            helper.setText(htmlContent, true);
-
-            mailSender.send(message);
-            log.info("Gap analysis completed email sent successfully to: {}", toEmail);
-        } catch (MessagingException e) {
-            log.error("Failed to send gap analysis completed email to: {}", toEmail, e);
-            throw new RuntimeException("Failed to send gap analysis completed email", e);
-        }
-    }
+			mailSender.send(message);
+			log.info("✓ {} sent to: {}", subject, toEmail);
+		} catch (MessagingException e) {
+			log.error("Failed to send email to: {}", toEmail, e);
+			throw new RuntimeException("Failed to send email: " + subject, e);
+		}
+	}
 }
