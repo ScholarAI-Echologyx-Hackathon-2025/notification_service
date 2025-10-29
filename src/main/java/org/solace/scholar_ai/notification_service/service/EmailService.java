@@ -5,6 +5,7 @@ import jakarta.mail.internet.MimeMessage;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.solace.scholar_ai.notification_service.exception.EmailSendException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -29,14 +30,12 @@ public class EmailService {
 
 	@Value("${app.name:ScholarAI}")
 	private String appName;
+	
+	@Value("${email.retry.max-attempts:3}")
+	private int maxRetryAttempts;
 
 	public void sendWelcomeEmail(String toEmail, String toName, Map<String, Object> templateData) {
-		// Sanity check - make sure mail is configured
-		if (fromEmail == null || fromEmail.isEmpty()) {
-			log.error("Mail credentials not configured. Cannot send welcome email to: {}", toEmail);
-			throw new RuntimeException("Mail credentials not configured");
-		}
-
+		validateEmailConfig();
 		log.info("Sending welcome email to: {}", toEmail);
 
 		try {
@@ -47,17 +46,16 @@ public class EmailService {
 			helper.setTo(toEmail);
 			helper.setSubject("Welcome to " + appName + "!");
 
-			// Render the HTML template with user data
 			Context context = new Context();
 			context.setVariables(templateData);
 			String htmlContent = templateEngine.process("welcome-email", context);
 			helper.setText(htmlContent, true);
 
-			mailSender.send(message);
+			sendWithRetry(message, toEmail);
 			log.info("✓ Welcome email sent to: {}", toEmail);
 		} catch (MessagingException e) {
 			log.error("Failed to send welcome email to: {}", toEmail, e);
-			throw new RuntimeException("Failed to send welcome email", e);
+			throw new EmailSendException("Failed to send welcome email", e);
 		}
 	}
 
@@ -85,15 +83,8 @@ public class EmailService {
 		sendTemplatedEmail(toEmail, "Project Deleted - " + appName, "project-deleted-email", templateData);
 	}
 
-	/**
-	 * Generic helper to send any templated email.
-	 * Reduces code duplication across all email methods.
-	 */
 	private void sendTemplatedEmail(String toEmail, String subject, String templateName, Map<String, Object> templateData) {
-		if (fromEmail == null || fromEmail.isEmpty()) {
-			log.error("Mail not configured, can't send to: {}", toEmail);
-			throw new RuntimeException("Mail credentials not configured");
-		}
+		validateEmailConfig();
 
 		try {
 			MimeMessage message = mailSender.createMimeMessage();
@@ -108,11 +99,47 @@ public class EmailService {
 			String htmlContent = templateEngine.process(templateName, context);
 			helper.setText(htmlContent, true);
 
-			mailSender.send(message);
+			sendWithRetry(message, toEmail);
 			log.info("✓ {} sent to: {}", subject, toEmail);
 		} catch (MessagingException e) {
 			log.error("Failed to send email to: {}", toEmail, e);
-			throw new RuntimeException("Failed to send email: " + subject, e);
+			throw new EmailSendException("Failed to send email: " + subject, e);
 		}
+	}
+	
+	private void validateEmailConfig() {
+		if (fromEmail == null || fromEmail.isEmpty()) {
+			throw new EmailSendException("Mail credentials not configured");
+		}
+	}
+	
+	private void sendWithRetry(MimeMessage message, String recipient) {
+		int attempts = 0;
+		Exception lastException = null;
+		
+		while (attempts < maxRetryAttempts) {
+			try {
+				mailSender.send(message);
+				if (attempts > 0) {
+					log.info("Email sent successfully on retry {} to: {}", attempts, recipient);
+				}
+				return;
+			} catch (Exception e) {
+				attempts++;
+				lastException = e;
+				if (attempts < maxRetryAttempts) {
+					log.warn("Email send attempt {} failed for {}, retrying...", attempts, recipient);
+					try {
+						Thread.sleep(1000 * attempts);
+					} catch (InterruptedException ie) {
+						Thread.currentThread().interrupt();
+						throw new EmailSendException("Interrupted during retry", ie);
+					}
+				}
+			}
+		}
+		
+		log.error("Failed to send email to {} after {} attempts", recipient, maxRetryAttempts);
+		throw new EmailSendException("Failed to send email after " + maxRetryAttempts + " attempts", lastException);
 	}
 }
