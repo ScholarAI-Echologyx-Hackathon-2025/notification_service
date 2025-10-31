@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 
 @Data
 @Builder
@@ -16,12 +18,16 @@ import lombok.NoArgsConstructor;
 @Schema(description = "Request object for sending notifications")
 public class NotificationRequest {
 
+    @NotBlank
     @Schema(description = "Type of notification to send", example = "WELCOME_EMAIL", required = true)
     private String notificationType;
 
+    @NotBlank
+    @Email
     @Schema(description = "Email address of the recipient", example = "user@example.com", required = true)
     private String recipientEmail;
 
+    @NotBlank
     @Schema(description = "Name of the recipient", example = "John Doe", required = true)
     private String recipientName;
 
