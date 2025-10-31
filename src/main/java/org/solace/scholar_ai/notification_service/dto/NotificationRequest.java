@@ -19,7 +19,20 @@ import jakarta.validation.constraints.NotBlank;
 public class NotificationRequest {
 
     @NotBlank
-    @Schema(description = "Type of notification to send", example = "WELCOME_EMAIL", required = true)
+    @Schema(
+            description = "Type of notification to send",
+            example = "WELCOME_EMAIL",
+            required = true,
+            allowableValues = {
+                "WELCOME_EMAIL",
+                "PASSWORD_RESET",
+                "EMAIL_VERIFICATION",
+                "ACCOUNT_UPDATE",
+                "WEB_SEARCH_COMPLETED",
+                "SUMMARIZATION_COMPLETED",
+                "PROJECT_DELETED",
+                "GAP_ANALYSIS_COMPLETED"
+            })
     private String notificationType;
 
     @NotBlank
