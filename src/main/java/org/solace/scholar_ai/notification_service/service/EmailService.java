@@ -13,10 +13,6 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-/**
- * Email service for sending templated emails.
- * Uses Thymeleaf for HTML templates and Spring's JavaMailSender.
- */
 @Service
 @RequiredArgsConstructor
 @Slf4j

@@ -9,10 +9,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * RabbitMQ configuration for notification queue.
- * Sets up the exchange, queue, and binding for async notification processing.
- */
 @Configuration
 public class RabbitMQConfig {
 
@@ -27,7 +23,7 @@ public class RabbitMQConfig {
 
 	@Bean
 	public Queue notificationQueue() {
-		return new Queue(notificationQueueName, true);  // durable=true
+		return new Queue(notificationQueueName, true);
 	}
 
 	@Bean
