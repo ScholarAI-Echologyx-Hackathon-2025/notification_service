@@ -8,5 +8,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface NotificationRecordRepository extends JpaRepository<NotificationRecord, UUID> {
+    /**
+     * Returns email notification records for a user ordered by newest first.
+     */
     List<NotificationRecord> findByUserIdOrderByCreatedAtDesc(UUID userId);
 }

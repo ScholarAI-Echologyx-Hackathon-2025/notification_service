@@ -8,6 +8,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AppNotificationRepository extends JpaRepository<AppNotification, UUID> {
-
+    /**
+     * Returns notifications for a user ordered by newest first.
+     */
     List<AppNotification> findByUserIdOrderByCreatedAtDesc(UUID userId);
 }
