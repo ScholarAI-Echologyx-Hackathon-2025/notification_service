@@ -13,43 +13,33 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SwaggerConfig {
 
-	@Value("${server.port:8082}")
-	private String serverPort;
+    @Value("${server.port:8082}")
+    private String serverPort;
 
-	@Bean
-	public OpenAPI customOpenAPI() {
-		return new OpenAPI()
-				.info(new Info()
-						.title("ScholarAI Notification Service API")
-						.description(
-								"""
-								Email notification service for the ScholarAI platform.
-								
-								Handles email notifications via SMTP with RabbitMQ integration.
-								Supports: welcome, password reset, email verification, and custom notifications.
-								""")
-						.version("1.0.0")
-						.contact(new Contact()
-								.name("ScholarAI Team")
-								.email("support@scholarai.com"))
-						.license(new License()
-								.name("MIT License")
-								.url("https://opensource.org/licenses/MIT")))
-				.servers(List.of(
-						new Server()
-								.url("http://localhost:" + serverPort)
-								.description("Local development server"),
-						new Server()
-								.url("https://api.scholarai.com/notifications")
-								.description("Production server")));
-	}
-}
-                        .version("1.0")
-                        .contact(
-                                new Contact().name("ScholarAI Development Team").email("dev@scholarai.com"))
-                        .license(new License().name("MIT License").url("https://opensource.org/licenses/MIT")))
-                .servers(List.of(
-                        new Server().url("http://localhost:" + serverPort).description("Development Server"),
-                        new Server().url("https://notification.scholarai.com").description("Production Server")));
+    @Bean
+    public OpenAPI customOpenAPI() {
+	return new OpenAPI()
+		.info(new Info()
+			.title("ScholarAI Notification Service API")
+			.description("""
+				Email notification service for the ScholarAI platform.
+
+				Handles email notifications via SMTP with RabbitMQ integration.
+				Supports: welcome, password reset, email verification, and custom notifications.
+				""")
+			.version("1.0.0")
+			.contact(new Contact()
+				.name("ScholarAI Team")
+				.email("support@scholarai.com"))
+			.license(new License()
+				.name("MIT License")
+				.url("https://opensource.org/licenses/MIT")))
+		.servers(List.of(
+			new Server()
+				.url("http://localhost:" + serverPort)
+				.description("Local development server"),
+			new Server()
+				.url("https://api.scholarai.com/notifications")
+				.description("Production server")));
     }
 }
