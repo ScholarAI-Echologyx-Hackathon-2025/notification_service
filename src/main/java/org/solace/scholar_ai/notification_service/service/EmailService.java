@@ -67,19 +67,19 @@ public class EmailService {
 	}
 
 	public void sendWebSearchCompletedEmail(String toEmail, String toName, Map<String, Object> templateData) {
-		sendTemplatedEmail(toEmail, "Your Search Results Are Ready", "web-search-completed-email", templateData);
+		sendTemplatedEmail(toEmail, "Your Search Results Are Ready", "web-search-completed", templateData);
 	}
 
 	public void sendSummarizationCompletedEmail(String toEmail, String toName, Map<String, Object> templateData) {
-		sendTemplatedEmail(toEmail, "Your Summary Is Ready", "summarization-completed-email", templateData);
+		sendTemplatedEmail(toEmail, "Your Summary Is Ready", "summarization-completed", templateData);
 	}
 
 	public void sendGapAnalysisCompletedEmail(String toEmail, String toName, Map<String, Object> templateData) {
-		sendTemplatedEmail(toEmail, "Gap Analysis Complete", "gap-analysis-completed-email", templateData);
+		sendTemplatedEmail(toEmail, "Gap Analysis Complete", "gap-analysis-completed", templateData);
 	}
 
 	public void sendProjectDeletedEmail(String toEmail, String toName, Map<String, Object> templateData) {
-		sendTemplatedEmail(toEmail, "Project Deleted - " + appName, "project-deleted-email", templateData);
+		sendTemplatedEmail(toEmail, "Project Deleted - " + appName, "project-deleted", templateData);
 	}
 
 	private void sendTemplatedEmail(String toEmail, String subject, String templateName, Map<String, Object> templateData) {
