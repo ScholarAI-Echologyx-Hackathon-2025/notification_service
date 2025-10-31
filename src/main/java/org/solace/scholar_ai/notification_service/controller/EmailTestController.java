@@ -9,15 +9,19 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.HashMap;
 import java.util.Map;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.solace.scholar_ai.notification_service.service.EmailService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/test")
 @RequiredArgsConstructor
+@Validated
 @Slf4j
 @Tag(name = "Email Test", description = "Test endpoints for email functionality")
 public class EmailTestController {
@@ -51,8 +55,7 @@ public class EmailTestController {
             })
     public ResponseEntity<String> testEmail(
             @Parameter(description = "Recipient email address", example = "user@example.com", required = true)
-                    @RequestParam
-                    String toEmail,
+                    @RequestParam @NotBlank @Email String toEmail,
             @Parameter(description = "Recipient name", example = "John Doe", required = false)
                     @RequestParam(defaultValue = "Test User")
                     String toName) {
