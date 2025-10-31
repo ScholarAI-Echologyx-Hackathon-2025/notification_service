@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.solace.scholar_ai.notification_service.model.AppNotification;
 import org.solace.scholar_ai.notification_service.repository.AppNotificationRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -17,10 +18,12 @@ public class AppNotificationService {
     private final AppNotificationRepository repository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    @Transactional(readOnly = true)
     public List<AppNotification> listByUser(UUID userId) {
         return repository.findByUserIdOrderByCreatedAtDesc(userId);
     }
 
+    @Transactional
     public AppNotification create(
             UUID userId,
             AppNotification.NotificationKind type,
@@ -57,6 +60,7 @@ public class AppNotificationService {
         }
     }
 
+    @Transactional
     public AppNotification markRead(UUID id) {
         return repository
                 .findById(id)
@@ -68,10 +72,12 @@ public class AppNotificationService {
                 .orElseThrow(() -> new IllegalArgumentException("Notification not found"));
     }
 
+    @Transactional
     public void markMultipleRead(List<UUID> ids) {
         ids.forEach(this::markRead);
     }
 
+    @Transactional
     public void delete(UUID id) {
         repository.deleteById(id);
     }

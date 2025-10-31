@@ -32,6 +32,9 @@ public class EmailService {
 
 	public void sendWelcomeEmail(String toEmail, String toName, Map<String, Object> templateData) {
 		validateEmailConfig();
+		if (toEmail == null || toEmail.isBlank()) {
+			throw new EmailSendException("Recipient email must not be empty");
+		}
 		log.info("Sending welcome email to: {}", toEmail);
 
 		try {
@@ -81,6 +84,9 @@ public class EmailService {
 
 	private void sendTemplatedEmail(String toEmail, String subject, String templateName, Map<String, Object> templateData) {
 		validateEmailConfig();
+		if (toEmail == null || toEmail.isBlank()) {
+			throw new EmailSendException("Recipient email must not be empty");
+		}
 
 		try {
 			MimeMessage message = mailSender.createMimeMessage();

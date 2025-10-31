@@ -5,15 +5,20 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.solace.scholar_ai.notification_service.model.AppNotification;
 import org.solace.scholar_ai.notification_service.service.AppNotificationService;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/v1/app-notifications")
 @RequiredArgsConstructor
+@Validated
 @Tag(name = "App Notifications", description = "CRUD for app/UX notifications consumed by the frontend")
 public class AppNotificationController {
 
@@ -27,7 +32,7 @@ public class AppNotificationController {
 
     @Operation(summary = "Create an app notification (from any service or frontend)")
     @PostMapping
-    public AppNotification create(@RequestBody CreateRequest req) {
+    public AppNotification create(@Valid @RequestBody CreateRequest req) {
         return service.create(
                 req.getUserId(),
                 req.getType(),
@@ -63,17 +68,28 @@ public class AppNotificationController {
 
     @Data
     public static class CreateRequest {
+        @NotNull
         private UUID userId;
+
+        @NotNull
         private AppNotification.NotificationKind type;
+
         private String category;
+
+        @NotBlank
         private String title;
+
         private String message;
+
         private AppNotification.NotificationPriority priority;
+
         private String actionUrl;
         private String actionText;
+
         private String relatedProjectId;
         private String relatedPaperId;
         private String relatedTaskId;
+
         private Map<String, Object> metadata;
     }
 }
